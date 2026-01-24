@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/api";
 import "./theme.css";
 
 function Rooms() {
+  const navigate = useNavigate();
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -26,7 +28,7 @@ function Rooms() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this room?")) return;
     try {
-      await api.delete(`/rooms/${id}`);
+      await api.delete(`/api/rooms/${id}`);
       setRooms(rooms.filter((room) => room.roomId !== id));
     } catch (err) {
       console.error(err);
@@ -38,6 +40,9 @@ function Rooms() {
     <div className="dashboard-container">
       <header className="dashboard-header">
         <h1>Room Management 🏨</h1>
+        <button className="add-btn" onClick={() => navigate("/rooms/add")}>
+          + Add Room
+        </button>
       </header>
 
       {loading && <p>Loading rooms...</p>}
@@ -70,6 +75,12 @@ function Rooms() {
                 {room.status}
               </span>
             </p>
+            <button
+              className="edit-btn"
+              onClick={() => navigate(`/rooms/edit/${room.roomId}`)}
+            >
+              Edit
+            </button>
             <button
               className="delete-btn"
               onClick={() => handleDelete(room.roomId)}

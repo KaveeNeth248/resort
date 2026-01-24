@@ -10,7 +10,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await api.get("/dashboard");
+        const res = await api.get("/api/dashboard");
         setDashboardData(res.data);
       } catch (error) {
         console.error("Error fetching dashboard:", error);
@@ -26,13 +26,14 @@ function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      {/* Header */}
-      <header className="dashboard-header">
-        <h1>Welcome Back 👋</h1>
-        <button className="logout-btn" onClick={handleLogout}>
-          Logout
-        </button>
-      </header>
+      {/* Nav Bar */}
+      <nav className="dashboard-nav">
+        <h1 className="nav-title">Welcome Back 👋</h1>
+        <div className="nav-links">
+          <Link to="/help" className="nav-btn">❓ Help</Link>
+          <button className="nav-btn" onClick={handleLogout}>Logout</button>
+        </div>
+      </nav>
 
       {/* Stats */}
       {dashboardData && (
@@ -50,6 +51,16 @@ function Dashboard() {
           <div className="stat-card orange">
             <p>Available</p>
             <h2>{dashboardData.availableRooms}</h2>
+          </div>
+
+          <div className="stat-card yellow">
+            <p>Booked</p>
+            <h2>{dashboardData.bookedRooms}</h2>
+          </div>
+
+          <div className="stat-card red">
+            <p>Maintenance</p>
+            <h2>{dashboardData.maintenanceRooms}</h2>
           </div>
 
           <div className="stat-card purple">
@@ -89,7 +100,7 @@ function Dashboard() {
             textDecoration: "none",
             color: "white",
             backgroundImage:
-              "url('https://images.unsplash.com/photo-1576675787175-0c74d9978287?auto=format&fit=crop&w=600&q=60')",
+              "url('https://tse4.mm.bing.net/th/id/OIP.ZJ6hCfKGMfcE5QIrvmzhhQHaE8?rs=1&pid=ImgDetMain&o=7&rm=3')",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -106,7 +117,7 @@ function Dashboard() {
             textDecoration: "none",
             color: "white",
             backgroundImage:
-              "url('https://images.unsplash.com/photo-1560347876-aeef00ee58a1?auto=format&fit=crop&w=600&q=60')",
+              "url('https://img.freepik.com/premium-photo/dark-hotel-room-with-clock-digital_1015255-180624.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -123,7 +134,7 @@ function Dashboard() {
             textDecoration: "none",
             color: "white",
             backgroundImage:
-              "url('https://tse4.mm.bing.net/th/id/OIP.ZJ6hCfKGMfcE5QIrvmzhhQHaE8?rs=1&pid=ImgDetMain&o=7&rm=3')",
+              "url('https://tse2.mm.bing.net/th/id/OIP.Nso8gWI3PIQ0zxIj8Ji9IgHaJQ?rs=1&pid=ImgDetMain&o=7&rm=3')",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -131,14 +142,10 @@ function Dashboard() {
           <p>View All Reservations</p>
           <h2>📋</h2>
         </Link>
-      </div>
-
-      {/* Navigation */}
-      <div className="nav-links">
-        <Link to="/help">❓ Help</Link>
-      </div>
+        </div>
     </div>
   );
 }
 
 export default Dashboard;
+
