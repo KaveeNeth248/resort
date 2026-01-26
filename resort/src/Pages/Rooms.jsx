@@ -26,15 +26,16 @@ function Rooms() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this room?")) return;
-    try {
-      await api.delete(`/api/rooms/${id}`);
-      setRooms(rooms.filter((room) => room.roomId !== id));
-    } catch (err) {
-      console.error(err);
-      alert("Failed to delete room.");
-    }
-  };
+  if (!window.confirm("Are you sure you want to delete this room?")) return;
+  try {
+    await api.delete(`/rooms/${id}`); 
+    setRooms((prevRooms) => prevRooms.filter((room) => room.roomId !== id));
+  } catch (err) {
+    console.error(err);
+    alert("Failed to delete room.");
+  }
+};
+
 
   return (
     <div className="dashboard-container">

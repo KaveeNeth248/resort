@@ -5,6 +5,7 @@ import Rooms from "./Pages/Rooms";
 import Reservations from "./Pages/Reservations";
 import Help from "./Pages/Help";
 import AddUpdateRoom from "./Pages/AddUpdateRoom";
+import ReservationForm from "./Pages/ReservationForm";
 
 
 
@@ -19,6 +20,9 @@ function App() {
         <Route path="/help" element={<Help />} />
         <Route path="/rooms/add" element={<AddUpdateRoom />} />
         <Route path="/rooms/edit/:id" element={<AddUpdateRoom />} />
+        <Route path="/rooms/delete/:id" element={<AddUpdateRoom />} />
+        <Route path="/reservations/add" element={<ReservationForm />} />
+        
       </Routes>
     </BrowserRouter>
   );

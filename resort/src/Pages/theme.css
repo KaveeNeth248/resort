@@ -359,4 +359,59 @@
     padding: 10px 20px;
     font-size: 15px;
   }
+  /* ---------- Reservation Card Specific Styling ---------- */
+.stat-card .reservation-info p {
+  margin-bottom: 12px;      /* space between lines */
+  word-wrap: break-word;    /* long words wrap nicely */
+  font-size: 15px;          /* slightly smaller for readability */
+  color: var(--text);
+}
+
+.stat-card .reservation-actions {
+  margin-top: 20px;         /* space between text and buttons */
+  display: flex;
+  flex-wrap: wrap;           /* wrap on smaller screens */
+  gap: 8px;                  /* space between buttons */
+}
+
+/* Buttons */
+.add-btn,
+.edit-btn,
+.delete-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-btn {
+  background: var(--accent);
+  color: white;
+}
+
+.add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+}
+
+.edit-btn {
+  background: #3498db;
+  color: white;
+}
+
+.edit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+}
+
+.delete-btn {
+  background: #e74c3c;
+  color: white;
+}
+
+.delete-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
+}
 }
