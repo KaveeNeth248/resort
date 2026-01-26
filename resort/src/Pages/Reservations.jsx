@@ -17,118 +17,136 @@ const Reservation = () => {
     fetchReservations();
   }, []);
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this reservation?")) {
-      api.delete(`/reservations/${id}`)
-        .then(() => fetchReservations())
-        .catch(err => console.error(err));
-    }
-  };
-  const handlePDF = (reservation) => {
+ const handlePDF = (reservation) => {
   const doc = new jsPDF("p", "mm", "a4");
 
-  // Background image URL (hotel)
-  const bgUrl = "https://wallpaperaccess.com/full/2690753.jpg";
+  // Background image (CORS-safe proxy)
+  const bgUrl =
+    "https://corsproxy.io/?" +
+    encodeURIComponent("https://wallpaperaccess.com/full/2690753.jpg");
+
   const img = new Image();
   img.crossOrigin = "anonymous";
   img.src = bgUrl;
 
   img.onload = () => {
-    // Draw full-page background image
+    // ===== BACKGROUND =====
     doc.addImage(img, "JPEG", 0, 0, 210, 297);
 
-    // Overlay semi-transparent dark layer for text readability
-    doc.setFillColor(0, 0, 0, 0.6);
+    // Dark glass overlay (dashboard-style)
+    doc.setFillColor(0, 0, 0);
+    doc.setGState(new doc.GState({ opacity: 0.25 }));
     doc.rect(0, 0, 210, 297, "F");
+    doc.setGState(new doc.GState({ opacity: 1 }));
 
-    // White card box - centered with shadow effect
+    // ===== CARD =====
     const cardX = 20;
-    const cardY = 40;
+    const cardY = 35;
     const cardWidth = 170;
-    const cardHeight = 210;
+    const cardHeight = 215;
 
-    // White fill with subtle shadow (simulate shadow with gray border)
     doc.setFillColor("#ffffff");
-    doc.setDrawColor("#d1c4a1"); // soft gold border
+    doc.setDrawColor("#e5d7b5"); // soft border
     doc.setLineWidth(1.5);
-    doc.roundedRect(cardX, cardY, cardWidth, cardHeight, 10, 10, "FD");
+    doc.roundedRect(cardX, cardY, cardWidth, cardHeight, 12, 12, "FD");
 
-    // Title - Ocean View Resort (gold color)
+    // ===== HEADER =====
     doc.setFont("helvetica", "bold");
     doc.setFontSize(26);
-    doc.setTextColor("#ffb300");
-    doc.text("Ocean View Resort", cardX + cardWidth / 2, cardY + 25, { align: "center" });
+    doc.setTextColor("#ffb300"); // accent
+    doc.text(
+      "Ocean View Resort",
+      cardX + cardWidth / 2,
+      cardY + 28,
+      { align: "center" }
+    );
 
-    // Subtitle - Reservation Invoice (centered, muted gray)
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(16);
-    doc.setTextColor("#555555");
-    doc.text("Reservation Invoice", cardX + cardWidth / 2, cardY + 40, { align: "center" });
+    doc.setFontSize(15);
+    doc.setTextColor("#777777");
+    doc.text(
+      "Reservation Invoice",
+      cardX + cardWidth / 2,
+      cardY + 42,
+      { align: "center" }
+    );
 
-    // Separator line under subtitle
+    // Accent divider
     doc.setDrawColor("#ffb300");
-    doc.setLineWidth(0.7);
-    doc.line(cardX + 20, cardY + 45, cardX + cardWidth - 20, cardY + 45);
+    doc.setLineWidth(0.8);
+    doc.line(cardX + 25, cardY + 48, cardX + cardWidth - 25, cardY + 48);
 
-    // Content details - left aligned with margin inside card
+    // ===== CONTENT =====
     doc.setFontSize(14);
-    doc.setTextColor("#222222");
-    const startTextX = cardX + 20;
-    let currentY = cardY + 65;
-    const lineSpacing = 12;
+    doc.setTextColor("#2c3e50");
+
+    let y = cardY + 70;
+    const gap = 14;
 
     const details = [
-      `Reservation ID: ${reservation.reservationId}`,
-      `Guest Name: ${reservation.user?.name || "N/A"}`,
-      `Room Type: ${reservation.room.roomType}`,
-      `Check-In: ${reservation.checkIn}`,
-      `Check-Out: ${reservation.checkOut}`,
-      `Total Bill: $${reservation.totalBill.toFixed(2)}`
+      ["Reservation ID", reservation.reservationId],
+      ["Guest Name", reservation.user?.name || "N/A"],
+      ["Room Type", reservation.room.roomType],
+      ["Check-In", reservation.checkIn],
+      ["Check-Out", reservation.checkOut],
+      ["Total Bill", `$${reservation.totalBill.toFixed(2)}`],
     ];
 
-    details.forEach(line => {
-      doc.text(line, startTextX, currentY);
-      currentY += lineSpacing;
+    details.forEach(([label, value]) => {
+      doc.setFont("helvetica", "bold");
+      doc.text(`${label}:`, cardX + 25, y);
+
+      doc.setFont("helvetica", "normal");
+      doc.text(String(value), cardX + 80, y);
+
+      y += gap;
     });
 
-    // Status badge - rounded rectangle on bottom right inside card
+    // ===== STATUS BADGE (button style) =====
     const status = reservation.status.toUpperCase();
-    let statusColor = "#ffb300"; // default yellow for pending
-    if (status === "APPROVED") statusColor = "#27ae60"; // green
-    else if (status === "REJECTED") statusColor = "#e74c3c"; // red
+    let statusColor = "#ffb300";
 
-    const badgeWidth = 60;
-    const badgeHeight = 18;
-    const badgeX = cardX + cardWidth - badgeWidth - 20;
-    const badgeY = cardY + cardHeight - 45;
+    if (status === "APPROVED") statusColor = "#27ae60";
+    if (status === "REJECTED") statusColor = "#e74c3c";
+
+    const badgeW = 65;
+    const badgeH = 20;
+    const badgeX = cardX + cardWidth - badgeW - 25;
+    const badgeY = cardY + cardHeight - 50;
 
     doc.setFillColor(statusColor);
-    doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 5, 5, "F");
+    doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 8, 8, "F");
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor("#ffffff");
-    doc.text(status, badgeX + badgeWidth / 2, badgeY + badgeHeight / 2 + 4, { align: "center" });
+    doc.text(
+      status,
+      badgeX + badgeW / 2,
+      badgeY + badgeH / 2 + 4,
+      { align: "center" }
+    );
 
-    // Footer message centered below card
+    // ===== FOOTER =====
     doc.setFont("helvetica", "italic");
     doc.setFontSize(11);
     doc.setTextColor("#ffffff");
     doc.text(
-      "Thank you for choosing Ocean View Resort. We look forward to welcoming you!",
+      "Thank you for choosing Ocean View Resort",
       cardX + cardWidth / 2,
-      cardY + cardHeight + 25,
+      cardY + cardHeight + 22,
       { align: "center" }
     );
 
-    // Save PDF
+    // ===== SAVE =====
     doc.save(`Reservation_${reservation.reservationId}.pdf`);
   };
 
   img.onerror = () => {
-    console.error("Failed to load background image");
+    alert("Failed to load background image");
   };
 };
+
   return (
     <div className="dashboard-container">
       <h2 className="dashboard-header">Reservations</h2>
