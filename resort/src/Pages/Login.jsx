@@ -1,6 +1,6 @@
 import { useState } from "react";
-import api from "../api/api"; // Axios instance with baseURL
-import { useNavigate } from "react-router-dom";
+import api from "../api/api";
+import { useNavigate, Link } from "react-router-dom";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -17,23 +17,25 @@ function Login() {
     setLoading(true);
 
     try {
-      const res = await api.post("/login", {
+      const res = await api.post("/auth/login", {
         username,
         password
       });
 
-      if (res.data.message === "Login Successful") {
-        localStorage.setItem("user", res.data.username);
-        navigate("/dashboard");
-      }
-    } catch (error) {
-      console.error("Login error:", error);
+      const user = res.data;
 
-      if (error.response?.status === 401) {
-        alert("Invalid Credentials");
+      // store logged-in user
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // role-based redirect
+      if (user.role === "ADMIN") {
+        navigate("/dashboard"); // ADMIN dashboard
       } else {
-        alert("Login failed. Please try again.");
+        navigate("/customer-dashboard"); // CUSTOMER dashboard
       }
+
+    } catch (error) {
+      alert("Invalid Credentials");
     } finally {
       setLoading(false);
     }
@@ -64,9 +66,13 @@ function Login() {
         <button onClick={login} className="login-btn" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
+
+        {/* ✅ New Customer Link */}
+        <p style={{ marginTop: "12px", textAlign: "center" }}>
+          Are you a new customer?{" "}
+          <Link to="/register">Register here</Link>
+        </p>
       </div>
     </div>
   );
-}
-
-export default Login;
+}export default Login;

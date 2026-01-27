@@ -1,61 +1,83 @@
 import React, { useEffect, useState } from "react";
-
-const HELP_API = "http://localhost:8080/api/help";
+import api from "../api/api";
+import "./theme.css";
 
 function Help() {
   const [helpText, setHelpText] = useState("");
+  const [role, setRole] = useState("general");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // GET /api/help
+  const fetchHelp = async (roleType) => {
+    if (roleType === "general") {
+      setHelpText(
+        "🌊 Welcome to Ocean View Resort!\n\nSelect Admin or Customer above to see detailed guidance."
+      );
+      setError(null);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await api.get(`/help/${roleType}`);
+      setHelpText(res.data);
+    } catch (err) {
+      setError(err.response?.data || err.message || "Failed to fetch help data.");
+      setHelpText("");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetch(HELP_API)
-      .then((res) => res.text())
-      .then((data) => setHelpText(data));
-  }, []);
+    fetchHelp(role);
+  }, [role]);
 
   return (
-    <>
-      {/* Animated background shapes */}
-      <div className="bg-shape one"></div>
-      <div className="bg-shape two"></div>
-
-      <div className="container">
-        {/* HERO SECTION */}
-        <section className="hero">
-          <div>
-            <h1>
-              Need <span>Help?</span>
-            </h1>
-            <p>
-              Welcome to the Ocean View Resort system. Below is a quick guide
-              to help you navigate and use the system efficiently.
-            </p>
-          </div>
-
-          {/* HELP CARD */}
-          <div className="card">
-            <h2>System Guide</h2>
-
-            <pre
-              style={{
-                whiteSpace: "pre-wrap",
-                color: "var(--muted)",
-                fontFamily: "Poppins, sans-serif",
-                fontSize: "14px",
-                lineHeight: "1.6",
-                marginTop: "10px",
-              }}
-            >
-              {helpText}
-            </pre>
-          </div>
-        </section>
-
-        {/* FOOTER */}
-        <footer className="footer">
-          © {new Date().getFullYear()} Ocean View Resort. All rights reserved.
-        </footer>
+    <div className="dashboard-container" style={{ minHeight: "100vh" }}>
+      {/* Role Selector Buttons */}
+      <div style={{ textAlign: "center", marginBottom: "40px" }}>
+        <button className="add-btn" onClick={() => setRole("general")}>General</button>
+        <button className="edit-btn" onClick={() => setRole("admin")}>Admin</button>
+        <button className="delete-btn" onClick={() => setRole("customer")}>Customer</button>
       </div>
-    </>
+
+      {/* Glass-style Help Card */}
+      <div className="help-card" style={{
+        background: "rgba(255, 255, 255, 0.05)", /* semi-transparent glass */
+        backdropFilter: "blur(12px) saturate(180%)",
+        WebkitBackdropFilter: "blur(12px) saturate(180%)",
+        border: "1px solid rgba(255, 255, 255, 0.2)",
+        borderRadius: "20px",
+        padding: "40px 30px",
+        boxShadow: "0 15px 40px rgba(0, 0, 0, 0.2)",
+        maxWidth: "800px",
+        margin: "auto",
+        transition: "transform 0.3s ease, box-shadow 0.3s ease"
+      }}>
+        <h2 style={{
+          fontSize: "28px",
+          fontWeight: "700",
+          color: "#fff",
+          textAlign: "center",
+          marginBottom: "25px",
+          textShadow: "1px 1px 5px rgba(0,0,0,0.5)"
+        }}>❓ Need Help?</h2>
+
+        {loading ? (
+          <p className="loading-text">⏳ Loading help...</p>
+        ) : error ? (
+          <p className="error-text">{error}</p>
+        ) : (
+          <pre className="help-text" style={{ color: "#f0f0f0" }}>{helpText}</pre>
+        )}
+      </div>
+
+      <footer style={{ textAlign: "center", marginTop: "60px", color: "#ccc" }}>
+        © {new Date().getFullYear()} Ocean View Resort. All rights reserved.
+      </footer>
+    </div>
   );
 }
 
