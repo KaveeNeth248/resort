@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import api from "../api/api"
+import api from "../api/api";
 import "./theme.css";
 
 const ReservationForm = ({ reservationId, onSuccess }) => {
   const [reservation, setReservation] = useState({
-    user: { userId: "" },
+    user: { id: "" },
     room: { roomId: "" },
     checkIn: "",
     checkOut: "",
@@ -14,75 +14,102 @@ const ReservationForm = ({ reservationId, onSuccess }) => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successPopup, setSuccessPopup] = useState(""); 
 
   useEffect(() => {
-    // Fetch users and rooms
-    api.get("/users").then(res => setUsers(res.data));
-    api.get("/rooms").then(res => setRooms(res.data));
+    api.get("/auth/users")
+      .then(res => setUsers(res.data.filter(u => u.role === "CUSTOMER")))
+      .catch(() => setError("Failed to load users"));
 
-    // If editing
+    api.get("/rooms")
+      .then(res => setRooms(res.data))
+      .catch(() => setError("Failed to load rooms"));
+  }, []);
+
+  useEffect(() => {
     if (reservationId) {
       setLoading(true);
       api.get(`/reservations/${reservationId}`)
         .then(res => {
           setReservation({
-            user: { userId: res.data.user.userId },
+            user: { id: res.data.user.id },
             room: { roomId: res.data.room.roomId },
             checkIn: res.data.checkIn,
             checkOut: res.data.checkOut,
           });
         })
-        .catch(err => setError("Failed to load reservation"))
+        .catch(() => setError("Failed to load reservation"))
         .finally(() => setLoading(false));
     }
   }, [reservationId]);
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
-    if (name === "userId" || name === "roomId") {
-      setReservation(prev => ({
-        ...prev,
-        [name === "userId" ? "user" : "room"]: { [name]: value },
-      }));
-    } else {
-      setReservation(prev => ({ ...prev, [name]: value }));
-    }
+    if (name === "userId") setReservation(prev => ({ ...prev, user: { id: value } }));
+    else if (name === "roomId") setReservation(prev => ({ ...prev, room: { roomId: value } }));
+    else setReservation(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    setError("");
     setLoading(true);
+    setError("");
+    setSuccessPopup(""); // reset
+
+    const payload = {
+      user: { id: Number(reservation.user.id) },
+      room: { roomId: Number(reservation.room.roomId) },
+      checkIn: reservation.checkIn,
+      checkOut: reservation.checkOut,
+    };
+
     try {
       if (reservationId) {
-        await api.put(`/reservations/${reservationId}`, reservation);
+        await api.put(`/reservations/${reservationId}`, payload);
+        showPopup("Reservation updated successfully!");
       } else {
-        await api.post("/reservations", reservation);
+        await api.post("/reservations", payload);
+        showPopup("Reservation added successfully!");
       }
-      onSuccess();
+
+      onSuccess?.();
+      setReservation({ user: { id: "" }, room: { roomId: "" }, checkIn: "", checkOut: "" });
+
     } catch (err) {
-      console.error(err);
-      setError("Error saving reservation");
+      setError(err.response?.data?.message || "Reservation failed");
     } finally {
       setLoading(false);
     }
   };
 
+  // ✅ Function to show popup for 3 seconds
+  const showPopup = (message) => {
+    setSuccessPopup(message);
+    setTimeout(() => setSuccessPopup(""), 3000);
+  };
+
   return (
     <div className="form-container">
-      <h2>{reservationId ? "Update" : "Add"} Reservation</h2>
+      <h3 style={{ textAlign: "center", marginBottom: "20px" }}>
+        {reservationId ? "Update Reservation" : "Add Reservation"}
+      </h3>
 
-      {error && <div className="error-text">{error}</div>}
-      {loading && <div className="loading-text">Loading...</div>}
+      {/* ✅ Popup message */}
+      {successPopup && (
+        <div className="popup-success">
+          {successPopup}
+        </div>
+      )}
 
-      <form>
+      {error && <p className="error-text">{error}</p>}
+      {loading && <p className="loading-text">Loading...</p>}
+
+      <form onSubmit={handleSubmit}>
         <div className="formGroup">
-          <label>User</label>
-          <select name="userId" value={reservation.user.userId} onChange={handleChange} required>
-            <option value="">Select User</option>
-            {users.map(u => (
-              <option key={u.userId} value={u.userId}>{u.name}</option>
-            ))}
+          <label>Customer</label>
+          <select name="userId" value={reservation.user.id} onChange={handleChange} required>
+            <option value="">Select Customer</option>
+            {users.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
           </select>
         </div>
 
@@ -92,7 +119,7 @@ const ReservationForm = ({ reservationId, onSuccess }) => {
             <option value="">Select Room</option>
             {rooms.map(r => (
               <option key={r.roomId} value={r.roomId}>
-                {r.roomType} - {r.status}
+                {r.roomType} - ₹{r.pricePerNight} ({r.status})
               </option>
             ))}
           </select>
@@ -108,8 +135,8 @@ const ReservationForm = ({ reservationId, onSuccess }) => {
           <input type="date" name="checkOut" value={reservation.checkOut} onChange={handleChange} required />
         </div>
 
-        <button type="submit" className="submitBtn" onClick={handleSubmit} disabled={loading}>
-          {reservationId ? "Update" : "Add"} Reservation
+        <button type="submit" className="submitBtn">
+          {reservationId ? "Update Reservation" : "Add Reservation"}
         </button>
       </form>
     </div>

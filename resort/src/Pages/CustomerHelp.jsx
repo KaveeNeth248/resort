@@ -2,28 +2,28 @@ import React, { useEffect, useState } from "react";
 import api from "../api/api";
 import "./theme.css";
 
-function Help() {
+function CustomerHelp() {
   const [helpText, setHelpText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchAdminHelp = async () => {
+    const fetchCustomerHelp = async () => {
       try {
         setLoading(true);
         setError(null);
-        const res = await api.get("/help/admin");
+        const res = await api.get("/help/customer");
         setHelpText(res.data);
       } catch (err) {
         setError(
-          err.response?.data || err.message || "Failed to load admin help."
+          err.response?.data || err.message || "Failed to load customer help."
         );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAdminHelp();
+    fetchCustomerHelp();
   }, []);
 
   return (
@@ -51,11 +51,11 @@ function Help() {
             marginBottom: "25px"
           }}
         >
-          🛠️ Admin Help
+          🙋 Customer Help
         </h2>
 
         {loading ? (
-          <p className="loading-text">⏳ Loading admin help...</p>
+          <p className="loading-text">⏳ Loading customer help...</p>
         ) : error ? (
           <p className="error-text">{error}</p>
         ) : (
@@ -71,4 +71,5 @@ function Help() {
     </div>
   );
 }
-export default Help;
+
+export default CustomerHelp;

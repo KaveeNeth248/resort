@@ -414,4 +414,25 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
 }
+/* Popup success message */
+.popup-success {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #27ae60; /* green */
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 10px rgba(0,0,0,0.3);
+  z-index: 9999;
+  font-weight: bold;
+  animation: fadeInOut 3s forwards;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
 }
