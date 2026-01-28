@@ -96,10 +96,10 @@ const ReservationForm = ({ reservationId, onSuccess }) => {
 
       {/* ✅ Popup message */}
       {successPopup && (
-        <div className="popup-success">
-          {successPopup}
-        </div>
-      )}
+      <div className="popup-success">
+      {successPopup}
+      </div>
+       )}
 
       {error && <p className="error-text">{error}</p>}
       {loading && <p className="loading-text">Loading...</p>}
