@@ -48,33 +48,95 @@ const Reservation = () => {
     }
   };
 
-  // Generate PDF bill
-  const handlePDF = (reservation) => {
-    const doc = new jsPDF("p", "mm", "a4");
+  const handlePDF = async (reservation) => {
+  const doc = new jsPDF("p", "mm", "a4");
 
-    doc.setFontSize(22);
-    doc.text("Ocean View Resort - Reservation Bill", 105, 20, { align: "center" });
-    doc.setFontSize(14);
-
-    const details = [
-      ["Reservation ID", reservation.reservationId],
-      ["Guest Name", reservation.user?.name || reservation.user?.username || "N/A"],
-      ["Room Type", reservation.room.roomType],
-      ["Check-In", reservation.checkIn],
-      ["Check-Out", reservation.checkOut],
-      ["Total Bill", `$${reservation.totalBill.toFixed(2)}`],
-      ["Status", reservation.status],
-    ];
-
-    let y = 40;
-    details.forEach(([label, value]) => {
-      doc.text(`${label}: ${value}`, 20, y);
-      y += 10;
+  // Helper: convert image URL to Base64
+  const getBase64ImageFromUrl = async (url) => {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
     });
-
-    doc.save(`Reservation_${reservation.reservationId}.pdf`);
   };
 
+  // Background image (converted to Base64 first)
+  try {
+    const bgBase64 = await getBase64ImageFromUrl(
+      "https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?cs=srgb&dl=pexels-pixabay-258154.jpg&fm=jpg"
+    );
+    doc.addImage(bgBase64, "JPEG", 0, 0, 210, 297); // full-page background
+  } catch (err) {
+    console.error("Background load failed", err);
+  }
+
+  // Glass-style card overlay
+  doc.setFillColor(255, 255, 255, 0.06);
+  doc.setDrawColor(255, 255, 255, 0.14);
+  doc.roundedRect(15, 25, 180, 247, 22, 22, "FD");
+
+  // Logo image
+  try {
+    const logoBase64 = await getBase64ImageFromUrl(
+      "https://www.bing.com/th/id/OIG1.1NOl9hAY_HzmKy2eK7xu?w=286&h=286&c=6&r=0&o=5&dpr=1.3&pid=ImgGn"
+    );
+    doc.addImage(logoBase64, "PNG", 85, 35, 40, 40); // centered logo
+  } catch (err) {
+    console.error("Logo load failed", err);
+  }
+
+  // Title
+  doc.setFontSize(22);
+  doc.setTextColor(224, 184, 74); // gold accent
+  doc.text("Ocean View Resort", 105, 85, { align: "center" });
+
+  doc.setFontSize(14);
+  doc.setTextColor(201, 161, 255); // purple accent
+  doc.text("Reservation Bill", 105, 95, { align: "center" });
+
+  // Reservation details
+  const details = [
+    ["Reservation ID", reservation.reservationId],
+    ["Guest Name", reservation.user?.fullName || reservation.user?.username || "N/A"],
+    ["Room Type", reservation.room.roomType],
+    ["Check-In", reservation.checkIn],
+    ["Check-Out", reservation.checkOut],
+    ["Total Bill", `$${reservation.totalBill.toFixed(2)}`],
+    ["Status", reservation.status],
+    ["Address", reservation.user?.address || "N/A"],
+  ];
+
+  let y = 115;
+  details.forEach(([label, value]) => {
+    doc.setFontSize(12);
+    doc.setTextColor(242, 242, 242); // var(--text)
+    doc.text(`${label}:`, 25, y);
+    doc.setTextColor(180, 180, 180); // var(--muted)
+    doc.text(`${value}`, 80, y);
+    y += 14;
+  });
+
+  // APPROVED Seal (unchanged)
+  if (reservation.status === "APPROVED") {
+    try {
+      const sealBase64 = await getBase64ImageFromUrl(
+        "https://static.vecteezy.com/system/resources/previews/027/570/215/original/approved-rubber-stamp-approved-icon-seal-of-approval-tested-and-verified-badge-with-check-mark-accepted-sign-authorized-badge-design-with-grunge-texture-illustration-vector.jpg"
+      );
+      doc.addImage(sealBase64, "JPEG", 140, 180, 50, 50); // bottom-right placement
+    } catch (err) {
+      console.error("Seal load failed", err);
+    }
+  }
+
+  // Footer
+  doc.setFontSize(11);
+  doc.setTextColor(180, 180, 180);
+  doc.text("Thank you for choosing Ocean View Resort!", 105, 280, { align: "center" });
+
+  doc.save(`Reservation_${reservation.reservationId}.pdf`);
+};
   return (
     <div className="dashboard-container">
       <h2 className="dashboard-header" style={{ textAlign: "center" }}>
@@ -139,7 +201,7 @@ const Reservation = () => {
               <td>{r.room.roomType}</td>
               <td>{r.checkIn}</td>
               <td>{r.checkOut}</td>
-              <td>${r.totalBill?.toFixed(2)}</td>
+              <td>Rs.{r.totalBill?.toFixed(2)}</td>
               <td>{r.status}</td>
               <td>
                 <button

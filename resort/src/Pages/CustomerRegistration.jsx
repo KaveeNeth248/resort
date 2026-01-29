@@ -5,15 +5,16 @@ import { useNavigate } from "react-router-dom";
 function CustomerRegistration() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [contact, setContact] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const register = async () => {
-    if (!username || !password || !name || !contact || !address) {
+    if (!username || !password || !fullName || !email || !contactNumber || !address) {
       alert("Please fill all fields");
       return;
     }
@@ -21,17 +22,20 @@ function CustomerRegistration() {
     setLoading(true);
 
     try {
-      const res = await api.post("/auth/register", {
+      const res = await api.post("/api/auth/register", {
         username,
         password,
-        name,
-        contact,
+        fullName,
+        email,
+        contactNumber,
         address,
+        role: "CUSTOMER", // default role
       });
 
       alert("Registration Successful!");
       navigate("/");
     } catch (error) {
+      console.error(error);
       alert("Registration Failed!");
     } finally {
       setLoading(false);
@@ -63,16 +67,25 @@ function CustomerRegistration() {
         <div className="form-group">
           <input
             placeholder="Full Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+          />
+        </div>
+
+        <div className="form-group">
+          <input
+            placeholder="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
 
         <div className="form-group">
           <input
             placeholder="Contact Number"
-            value={contact}
-            onChange={(e) => setContact(e.target.value)}
+            value={contactNumber}
+            onChange={(e) => setContactNumber(e.target.value)}
           />
         </div>
 
@@ -93,3 +106,4 @@ function CustomerRegistration() {
 }
 
 export default CustomerRegistration;
+
