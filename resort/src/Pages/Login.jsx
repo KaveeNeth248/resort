@@ -8,9 +8,18 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Validation function
+  const validate = () => {
+    if (!username.trim()) return "Username is required";
+    if (!password) return "Password is required";
+    if (password.length < 6) return "Password must be at least 6 characters";
+    return null; // no errors
+  };
+
   const login = async () => {
-    if (!username || !password) {
-      alert("Please enter username and password");
+    const errorMessage = validate();
+    if (errorMessage) {
+      alert(errorMessage);
       return;
     }
 
@@ -75,4 +84,6 @@ function Login() {
       </div>
     </div>
   );
-}export default Login;
+}
+
+export default Login;
