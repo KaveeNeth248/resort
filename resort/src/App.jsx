@@ -10,6 +10,7 @@ import CustomerRegistration from "./Pages/CustomerRegistration";
 import CustomerDashboard from "./Pages/Customer-Dashboard";
 import ViewRooms from "./Pages/ViewRoom";
 import CustomerHelp from "./Pages/CustomerHelp";
+import UpdateCustomerDetails from "./Pages/UpdateCustomerDetails";
 
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
         <Route path="/register" element={<CustomerRegistration />} />
         <Route path="/customer-dashboard" element={<CustomerDashboard />} />
         <Route path="/rooms1" element={<ViewRooms />} />
+        <Route path="/updateCustomer/:userId" element={<UpdateCustomerDetails />} />
       </Routes>
     </BrowserRouter>
   );

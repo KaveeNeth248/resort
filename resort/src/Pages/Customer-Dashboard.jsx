@@ -165,6 +165,25 @@ function CustomerDashboard() {
           <h2>🔍</h2>
         </Link>
       </div>
+      
+        {/* ✅ LINK TO UPDATE CUSTOMER DETAILS */}
+        {user && (
+          <Link
+            to={`/updateCustomer/${user.id}`} 
+            className="stat-card green"
+            style={{
+              textDecoration: "none",
+              color: "white",
+              backgroundImage:
+                "url('https://images.pexels.com/photos/3184295/pexels-photo-3184295.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <p>Your Details</p>
+            <h2>📝</h2>
+          </Link>
+        )}
 
       {/* MY RESERVATIONS */}
       <h2 style={{ margin: "30px 0 15px 0", color: "var(--accent)" }}>
@@ -209,7 +228,7 @@ function CustomerDashboard() {
                   >
                     PDF
                   </button>
-                )}
+                 )}
               </div>
             ))
           )}
