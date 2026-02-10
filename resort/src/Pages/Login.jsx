@@ -8,12 +8,12 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Validation function
+  // ✅ Form validation
   const validate = () => {
     if (!username.trim()) return "Username is required";
     if (!password) return "Password is required";
     if (password.length < 6) return "Password must be at least 6 characters";
-    return null; // no errors
+    return null;
   };
 
   const login = async () => {
@@ -28,22 +28,25 @@ function Login() {
     try {
       const res = await api.post("/auth/login", {
         username,
-        password
+        password,
       });
 
-      const user = res.data;
+      const { token, user } = res.data;
 
-      // store logged-in user
+      // ✅ Save token separately for API calls
+      localStorage.setItem("token", token);
+
+      // ✅ Save user info
       localStorage.setItem("user", JSON.stringify(user));
 
-      // role-based redirect
+      // ✅ Role-based navigation
       if (user.role === "ADMIN") {
-        navigate("/dashboard"); // ADMIN dashboard
+        navigate("/dashboard");
       } else {
-        navigate("/customer-dashboard"); // CUSTOMER dashboard
+        navigate("/customer-dashboard");
       }
-
     } catch (error) {
+      console.error(error);
       alert("Invalid Credentials");
     } finally {
       setLoading(false);
@@ -76,7 +79,6 @@ function Login() {
           {loading ? "Logging in..." : "Login"}
         </button>
 
-        {/* ✅ New Customer Link */}
         <p style={{ marginTop: "12px", textAlign: "center" }}>
           Are you a new customer?{" "}
           <Link to="/register">Register here</Link>
