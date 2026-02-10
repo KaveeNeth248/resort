@@ -11,13 +11,15 @@ import CustomerDashboard from "./Pages/Customer-Dashboard";
 import ViewRooms from "./Pages/ViewRoom";
 import CustomerHelp from "./Pages/CustomerHelp";
 import UpdateCustomerDetails from "./Pages/UpdateCustomerDetails";
+import Homepage from "./Pages/HomePage";
 
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Homepage />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/rooms" element={<Rooms />} />
         <Route path="/reservations" element={<Reservations />} />

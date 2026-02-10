@@ -38,7 +38,24 @@ function CustomerDashboard() {
     navigate("/");
   };
 
-  // ===== PDF FUNCTION (ADDED) =====
+  // ===== DELETE RESERVATION (ADDED) =====
+  const handleDeleteReservation = async (reservationId) => {
+    if (!window.confirm("Are you sure you want to delete this reservation?"))
+      return;
+
+    try {
+      await api.delete(`/reservations/${reservationId}`);
+
+      setReservations((prev) =>
+        prev.filter((r) => r.reservationId !== reservationId)
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete reservation");
+    }
+  };
+
+  // ===== PDF FUNCTION =====
   const handlePDF = async (reservation) => {
     const doc = new jsPDF("p", "mm", "a4");
 
@@ -165,25 +182,25 @@ function CustomerDashboard() {
           <h2>🔍</h2>
         </Link>
       </div>
-      
-        {/* ✅ LINK TO UPDATE CUSTOMER DETAILS */}
-        {user && (
-          <Link
-            to={`/updateCustomer/${user.id}`} 
-            className="stat-card green"
-            style={{
-              textDecoration: "none",
-              color: "white",
-              backgroundImage:
-                "url('https://images.pexels.com/photos/3184295/pexels-photo-3184295.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940')",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
-            <p>Your Details</p>
-            <h2>📝</h2>
-          </Link>
-        )}
+
+      {/* UPDATE CUSTOMER DETAILS */}
+      {user && (
+        <Link
+          to={`/updateCustomer/${user.id}`}
+          className="stat-card green"
+          style={{
+            textDecoration: "none",
+            color: "white",
+            backgroundImage:
+              "url('https://images.pexels.com/photos/3184295/pexels-photo-3184295.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          <p>Your Details</p>
+          <h2>📝</h2>
+        </Link>
+      )}
 
       {/* MY RESERVATIONS */}
       <h2 style={{ margin: "30px 0 15px 0", color: "var(--accent)" }}>
@@ -228,7 +245,23 @@ function CustomerDashboard() {
                   >
                     PDF
                   </button>
-                 )}
+                )}
+
+                {/* DELETE BUTTON (ADDED) */}
+                {r.status !== "APPROVED" && (
+                  <button
+                    className="add-btn"
+                    style={{
+                      marginTop: "10px",
+                      backgroundColor: "#e74c3c",
+                    }}
+                    onClick={() =>
+                      handleDeleteReservation(r.reservationId)
+                    }
+                  >
+                    🗑 Delete
+                  </button>
+                )}
               </div>
             ))
           )}
