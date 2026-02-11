@@ -12,6 +12,11 @@ import ViewRooms from "./Pages/ViewRoom";
 import CustomerHelp from "./Pages/CustomerHelp";
 import UpdateCustomerDetails from "./Pages/UpdateCustomerDetails";
 import Homepage from "./Pages/HomePage";
+import AdminManageStaff from "./Pages/AdminManageStaff";
+import StaffLogin from "./Pages/StaffLogin";
+import StaffDashboard from "./Pages/StaffDashboard";
+import ManageReservation from "./Pages/ManageReservation";
+import StaffHelp from "./Pages/StaffHelp";
 
 
 function App() {
@@ -33,6 +38,12 @@ function App() {
         <Route path="/customer-dashboard" element={<CustomerDashboard />} />
         <Route path="/rooms1" element={<ViewRooms />} />
         <Route path="/updateCustomer/:userId" element={<UpdateCustomerDetails />} />
+        <Route path="/admin/staff" element={<AdminManageStaff />} />
+        <Route path="/staff-login" element={<StaffLogin />} />
+        <Route path="/staff-dashboard" element={<StaffDashboard />} />
+        <Route path="/manage-reservations" element={<ManageReservation />} />
+        <Route path="/help/staff" element={<StaffHelp />} />
+
       </Routes>
     </BrowserRouter>
   );

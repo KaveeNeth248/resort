@@ -11,9 +11,16 @@ const Homepage = () => {
       <nav className="dashboard-nav" style={{ marginBottom: 30 }}>
         <h1 className="nav-title">🌊 Ocean View Resort - Thalawathugoda</h1>
         <div className="nav-links">
+          {/* Regular Login */}
           <Link to="/login" className="nav-btn" title="Login">
             <FaUser size={20} style={{ verticalAlign: "middle", marginRight: 6 }} />
             Login
+          </Link>
+
+          {/* Staff Login */}
+          <Link to="/staff-login" className="nav-btn" title="Staff Login">
+            <FaUser size={20} style={{ verticalAlign: "middle", marginRight: 6 }} />
+            Staff Login
           </Link>
         </div>
       </nav>
