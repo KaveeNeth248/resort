@@ -51,7 +51,6 @@ const Reservation = () => {
   const handlePDF = async (reservation) => {
   const doc = new jsPDF("p", "mm", "a4");
 
-  // Helper: convert image URL to Base64
   const getBase64ImageFromUrl = async (url) => {
     const res = await fetch(url);
     const blob = await res.blob();
@@ -62,38 +61,38 @@ const Reservation = () => {
     });
   };
 
-  // Background image (converted to Base64 first)
+  // Background image
   try {
     const bgBase64 = await getBase64ImageFromUrl(
       "https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?cs=srgb&dl=pexels-pixabay-258154.jpg&fm=jpg"
     );
-    doc.addImage(bgBase64, "JPEG", 0, 0, 210, 297); // full-page background
+    doc.addImage(bgBase64, "JPEG", 0, 0, 210, 297);
   } catch (err) {
     console.error("Background load failed", err);
   }
 
-  // Glass-style card overlay
+  // Glass-style overlay
   doc.setFillColor(255, 255, 255, 0.06);
   doc.setDrawColor(255, 255, 255, 0.14);
   doc.roundedRect(15, 25, 180, 247, 22, 22, "FD");
 
-  // Logo image
+  // Logo
   try {
     const logoBase64 = await getBase64ImageFromUrl(
       "https://www.bing.com/th/id/OIG1.1NOl9hAY_HzmKy2eK7xu?w=286&h=286&c=6&r=0&o=5&dpr=1.3&pid=ImgGn"
     );
-    doc.addImage(logoBase64, "PNG", 85, 35, 40, 40); // centered logo
+    doc.addImage(logoBase64, "PNG", 85, 35, 40, 40);
   } catch (err) {
     console.error("Logo load failed", err);
   }
 
   // Title
   doc.setFontSize(22);
-  doc.setTextColor(224, 184, 74); // gold accent
+  doc.setTextColor(224, 184, 74);
   doc.text("Ocean View Resort", 105, 85, { align: "center" });
 
   doc.setFontSize(14);
-  doc.setTextColor(201, 161, 255); // purple accent
+  doc.setTextColor(201, 161, 255);
   doc.text("Reservation Bill", 105, 95, { align: "center" });
 
   // Reservation details
@@ -111,20 +110,20 @@ const Reservation = () => {
   let y = 115;
   details.forEach(([label, value]) => {
     doc.setFontSize(12);
-    doc.setTextColor(242, 242, 242); // var(--text)
+    doc.setTextColor(242, 242, 242);
     doc.text(`${label}:`, 25, y);
-    doc.setTextColor(180, 180, 180); // var(--muted)
+    doc.setTextColor(180, 180, 180);
     doc.text(`${value}`, 80, y);
     y += 14;
   });
 
-  // APPROVED Seal (unchanged)
+  // APPROVED Seal
   if (reservation.status === "APPROVED") {
     try {
       const sealBase64 = await getBase64ImageFromUrl(
         "https://static.vecteezy.com/system/resources/previews/027/570/215/original/approved-rubber-stamp-approved-icon-seal-of-approval-tested-and-verified-badge-with-check-mark-accepted-sign-authorized-badge-design-with-grunge-texture-illustration-vector.jpg"
       );
-      doc.addImage(sealBase64, "JPEG", 140, 180, 50, 50); // bottom-right placement
+      doc.addImage(sealBase64, "JPEG", 140, 180, 50, 50);
     } catch (err) {
       console.error("Seal load failed", err);
     }
@@ -135,7 +134,15 @@ const Reservation = () => {
   doc.setTextColor(180, 180, 180);
   doc.text("Thank you for choosing Ocean View Resort!", 105, 280, { align: "center" });
 
-  doc.save(`Reservation_${reservation.reservationId}.pdf`);
+  // Open PDF in new window and trigger print dialog
+  const pdfBlob = doc.output("blob");
+  const pdfUrl = URL.createObjectURL(pdfBlob);
+
+  const printWindow = window.open(pdfUrl);
+  printWindow.onload = function () {
+    printWindow.focus();
+    printWindow.print(); 
+  };
 };
   return (
     <div className="dashboard-container">

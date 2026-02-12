@@ -33,19 +33,23 @@ function CustomerDashboard() {
     }
   };
 
+  // ===== LOGOUT WITH CONFIRMATION =====
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    navigate("/");
+    const confirmLogout = window.confirm("Are you sure you want to exit?");
+    if (confirmLogout) {
+      localStorage.removeItem("user");
+      navigate("/"); // Redirect to home page
+    }
+    // If Cancel, do nothing
   };
 
-  // ===== DELETE RESERVATION (ADDED) =====
+  // ===== DELETE RESERVATION =====
   const handleDeleteReservation = async (reservationId) => {
     if (!window.confirm("Are you sure you want to delete this reservation?"))
       return;
 
     try {
       await api.delete(`/reservations/${reservationId}`);
-
       setReservations((prev) =>
         prev.filter((r) => r.reservationId !== reservationId)
       );
@@ -132,12 +136,9 @@ function CustomerDashboard() {
 
     doc.setFontSize(11);
     doc.setTextColor(180, 180, 180);
-    doc.text(
-      "Thank you for choosing Ocean View Resort!",
-      105,
-      280,
-      { align: "center" }
-    );
+    doc.text("Thank you for choosing Ocean View Resort!", 105, 280, {
+      align: "center",
+    });
 
     doc.save(`Reservation_${reservation.reservationId}.pdf`);
   };
@@ -228,13 +229,27 @@ function CustomerDashboard() {
                   }}
                 />
 
-                <p><strong>Reservation ID:</strong> {r.reservationId}</p>
-                <p><strong>Room Type:</strong> {r.room?.roomType}</p>
-                <p><strong>Price Per Night:</strong> Rs. {r.room?.pricePerNight}</p>
-                <p><strong>Check-In:</strong> {r.checkIn}</p>
-                <p><strong>Check-Out:</strong> {r.checkOut}</p>
-                <p><strong>Total Bill:</strong> Rs. {r.totalBill}</p>
-                <p><strong>Status:</strong> {r.status}</p>
+                <p>
+                  <strong>Reservation ID:</strong> {r.reservationId}
+                </p>
+                <p>
+                  <strong>Room Type:</strong> {r.room?.roomType}
+                </p>
+                <p>
+                  <strong>Price Per Night:</strong> Rs. {r.room?.pricePerNight}
+                </p>
+                <p>
+                  <strong>Check-In:</strong> {r.checkIn}
+                </p>
+                <p>
+                  <strong>Check-Out:</strong> {r.checkOut}
+                </p>
+                <p>
+                  <strong>Total Bill:</strong> Rs. {r.totalBill}
+                </p>
+                <p>
+                  <strong>Status:</strong> {r.status}
+                </p>
 
                 {/* PDF BUTTON ONLY IF APPROVED */}
                 {r.status === "APPROVED" && (
@@ -255,9 +270,7 @@ function CustomerDashboard() {
                       marginTop: "10px",
                       backgroundColor: "#e74c3c",
                     }}
-                    onClick={() =>
-                      handleDeleteReservation(r.reservationId)
-                    }
+                    onClick={() => handleDeleteReservation(r.reservationId)}
                   >
                     🗑 Delete
                   </button>
