@@ -13,23 +13,48 @@ function CustomerRegistration() {
 
   const navigate = useNavigate();
 
+  // ✅ Email validation regex
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // ✅ Strong password validation
+  const isValidPassword = (password) => {
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return passwordRegex.test(password);
+  };
+
   const register = async () => {
     if (!username || !password || !fullName || !email || !contactNumber || !address) {
       alert("Please fill all fields");
       return;
     }
 
+    if (!isValidEmail(email)) {
+      alert("Please enter a valid email address");
+      return;
+    }
+
+    if (!isValidPassword(password)) {
+      alert(
+        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character"
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await api.post("auth/register", {
+      await api.post("auth/register", {
         username,
         password,
         fullName,
         email,
         contactNumber,
         address,
-        role: "CUSTOMER", // default role
+        role: "CUSTOMER",
       });
 
       alert("Registration Successful!");
@@ -106,4 +131,3 @@ function CustomerRegistration() {
 }
 
 export default CustomerRegistration;
-

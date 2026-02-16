@@ -20,12 +20,14 @@ function UpdateCustomerDetails() {
       try {
         const res = await api.get("/auth/users");
         const user = res.data.find((u) => u.id === parseInt(userId));
+
         if (user) {
           setFullName(user.fullName || "");
           setEmail(user.email || "");
           setContactNumber(user.contactNumber || "");
           setAddress(user.address || "");
           setIdType(user.idType || "PASSPORT");
+
           if (user.idDocumentPath) {
             const parts = user.idDocumentPath.split("/");
             setExistingDocumentName(parts[parts.length - 1]);
@@ -39,8 +41,42 @@ function UpdateCustomerDetails() {
         alert("Failed to load user data");
       }
     };
+
     fetchUser();
   }, [userId, navigate]);
+
+  // ✅ File validation on selection
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
+
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (!allowedTypes.includes(file.type)) {
+      alert("Only PDF or Image files (JPG, PNG, GIF, WEBP) are allowed.");
+      e.target.value = null; // Clear input
+      setIdDocument(null);
+      return;
+    }
+
+    if (file.size > maxSize) {
+      alert("File size must be less than 5MB.");
+      e.target.value = null;
+      setIdDocument(null);
+      return;
+    }
+
+    setIdDocument(file);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,6 +92,7 @@ function UpdateCustomerDetails() {
     formData.append("contactNumber", contactNumber);
     formData.append("address", address);
     formData.append("idType", idType);
+
     if (idDocument) {
       formData.append("idDocument", idDocument);
     }
@@ -151,7 +188,7 @@ function UpdateCustomerDetails() {
             <input
               type="file"
               accept=".pdf,image/*"
-              onChange={(e) => setIdDocument(e.target.files[0])}
+              onChange={handleFileChange}
             />
           </div>
 
