@@ -13,13 +13,13 @@ function CustomerRegistration() {
 
   const navigate = useNavigate();
 
-  // ✅ Email validation regex
+  // Email validation
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return emailRegex.test(email.trim());
   };
 
-  // ✅ Strong password validation
+  // Strong password validation
   const isValidPassword = (password) => {
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -27,17 +27,32 @@ function CustomerRegistration() {
   };
 
   const register = async () => {
-    if (!username || !password || !fullName || !email || !contactNumber || !address) {
+    // Trim all input values
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
+    const trimmedFullName = fullName.trim();
+    const trimmedEmail = email.trim();
+    const trimmedContact = contactNumber.trim();
+    const trimmedAddress = address.trim();
+
+    if (
+      !trimmedUsername ||
+      !trimmedPassword ||
+      !trimmedFullName ||
+      !trimmedEmail ||
+      !trimmedContact ||
+      !trimmedAddress
+    ) {
       alert("Please fill all fields");
       return;
     }
 
-    if (!isValidEmail(email)) {
+    if (!isValidEmail(trimmedEmail)) {
       alert("Please enter a valid email address");
       return;
     }
 
-    if (!isValidPassword(password)) {
+    if (!isValidPassword(trimmedPassword)) {
       alert(
         "Password must be at least 8 characters and include uppercase, lowercase, number, and special character"
       );
@@ -47,21 +62,25 @@ function CustomerRegistration() {
     setLoading(true);
 
     try {
-      await api.post("auth/register", {
-        username,
-        password,
-        fullName,
-        email,
-        contactNumber,
-        address,
+      await api.post("/auth/register", {
+        username: trimmedUsername,
+        password: trimmedPassword,
+        fullName: trimmedFullName,
+        email: trimmedEmail,
+        contactNumber: trimmedContact,
+        address: trimmedAddress,
         role: "CUSTOMER",
       });
 
       alert("Registration Successful!");
-      navigate("/");
+      navigate("/"); // Navigate to login page
     } catch (error) {
-      console.error(error);
-      alert("Registration Failed!");
+      console.error("Registration error:", error.response || error);
+      if (error.response?.status === 409) {
+        alert("Username already exists!");
+      } else {
+        alert("Registration Failed! Please check your input or server.");
+      }
     } finally {
       setLoading(false);
     }
@@ -129,5 +148,4 @@ function CustomerRegistration() {
     </div>
   );
 }
-
 export default CustomerRegistration;

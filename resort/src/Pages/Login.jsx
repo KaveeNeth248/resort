@@ -26,17 +26,16 @@ function Login() {
     setLoading(true);
 
     try {
+      // ✅ Login request
       const res = await api.post("/auth/login", {
-        username,
-        password,
+        username: username.trim(),
+        password: password.trim(),
       });
 
       const { token, user } = res.data;
 
-      // ✅ Save token separately for API calls
+      // ✅ Save token and user info
       localStorage.setItem("token", token);
-
-      // ✅ Save user info
       localStorage.setItem("user", JSON.stringify(user));
 
       // ✅ Role-based navigation
@@ -46,8 +45,13 @@ function Login() {
         navigate("/customer-dashboard");
       }
     } catch (error) {
-      console.error(error);
-      alert("Invalid Credentials");
+      console.error("Login error:", error.response || error);
+
+      if (error.response?.status === 401) {
+        alert("Invalid Credentials");
+      } else {
+        alert("Server error. Please check backend.");
+      }
     } finally {
       setLoading(false);
     }
@@ -80,8 +84,7 @@ function Login() {
         </button>
 
         <p style={{ marginTop: "12px", textAlign: "center" }}>
-          Are you a new customer?{" "}
-          <Link to="/register">Register here</Link>
+          Are you a new customer? <Link to="/register">Register here</Link>
         </p>
       </div>
     </div>

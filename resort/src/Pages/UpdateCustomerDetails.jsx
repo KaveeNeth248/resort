@@ -21,20 +21,21 @@ function UpdateCustomerDetails() {
         const res = await api.get("/auth/users");
         const user = res.data.find((u) => u.id === parseInt(userId));
 
-        if (user) {
-          setFullName(user.fullName || "");
-          setEmail(user.email || "");
-          setContactNumber(user.contactNumber || "");
-          setAddress(user.address || "");
-          setIdType(user.idType || "PASSPORT");
-
-          if (user.idDocumentPath) {
-            const parts = user.idDocumentPath.split("/");
-            setExistingDocumentName(parts[parts.length - 1]);
-          }
-        } else {
+        if (!user) {
           alert("User not found");
-          navigate("/");
+          navigate("/customer-dashboard");
+          return;
+        }
+
+        setFullName(user.fullName || "");
+        setEmail(user.email || "");
+        setContactNumber(user.contactNumber || "");
+        setAddress(user.address || "");
+        setIdType(user.idType || "PASSPORT");
+
+        if (user.idDocumentPath) {
+          const parts = user.idDocumentPath.split("/");
+          setExistingDocumentName(parts[parts.length - 1]);
         }
       } catch (error) {
         console.error("Failed to fetch user:", error);
@@ -45,7 +46,7 @@ function UpdateCustomerDetails() {
     fetchUser();
   }, [userId, navigate]);
 
-  // ✅ File validation on selection
+  // ✅ File validation
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -58,12 +59,11 @@ function UpdateCustomerDetails() {
       "image/gif",
       "image/webp",
     ];
-
     const maxSize = 5 * 1024 * 1024; // 5MB
 
     if (!allowedTypes.includes(file.type)) {
-      alert("Only PDF or Image files (JPG, PNG, GIF, WEBP) are allowed.");
-      e.target.value = null; // Clear input
+      alert("Only PDF or image files (JPG, PNG, GIF, WEBP) are allowed.");
+      e.target.value = null;
       setIdDocument(null);
       return;
     }
@@ -81,16 +81,22 @@ function UpdateCustomerDetails() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!fullName || !email || !contactNumber || !address || !idType) {
+    // ✅ Trim values
+    const trimmedFullName = fullName.trim();
+    const trimmedEmail = email.trim();
+    const trimmedContact = contactNumber.trim();
+    const trimmedAddress = address.trim();
+
+    if (!trimmedFullName || !trimmedEmail || !trimmedContact || !trimmedAddress || !idType) {
       alert("Please fill all fields");
       return;
     }
 
     const formData = new FormData();
-    formData.append("fullName", fullName);
-    formData.append("email", email);
-    formData.append("contactNumber", contactNumber);
-    formData.append("address", address);
+    formData.append("fullName", trimmedFullName);
+    formData.append("email", trimmedEmail);
+    formData.append("contactNumber", trimmedContact);
+    formData.append("address", trimmedAddress);
     formData.append("idType", idType);
 
     if (idDocument) {
@@ -108,8 +114,8 @@ function UpdateCustomerDetails() {
       localStorage.setItem("user", JSON.stringify(res.data));
       navigate("/customer-dashboard");
     } catch (error) {
-      console.error("Update failed:", error);
-      alert("Failed to update details");
+      console.error("Update failed:", error.response || error);
+      alert("Failed to update details. Please check inputs or server.");
     } finally {
       setLoading(false);
     }
@@ -178,18 +184,14 @@ function UpdateCustomerDetails() {
                     display: "block",
                     marginTop: "5px",
                     fontSize: "0.9em",
-                    color: "#ccc",
+                    color: "#555",
                   }}
                 >
                   Current file: {existingDocumentName}
                 </span>
               )}
             </label>
-            <input
-              type="file"
-              accept=".pdf,image/*"
-              onChange={handleFileChange}
-            />
+            <input type="file" accept=".pdf,image/*" onChange={handleFileChange} />
           </div>
 
           <button type="submit" className="login-btn" disabled={loading}>
