@@ -8,6 +8,10 @@ function CustomerDashboard() {
   const [user, setUser] = useState(null);
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [editingReservation, setEditingReservation] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,17 +37,13 @@ function CustomerDashboard() {
     }
   };
 
-  // ===== LOGOUT WITH CONFIRMATION =====
   const handleLogout = () => {
-    const confirmLogout = window.confirm("Are you sure you want to exit?");
-    if (confirmLogout) {
+    if (window.confirm("Are you sure you want to exit?")) {
       localStorage.removeItem("user");
-      navigate("/"); // Redirect to home page
+      navigate("/");
     }
-    // If Cancel, do nothing
   };
 
-  // ===== DELETE RESERVATION =====
   const handleDeleteReservation = async (reservationId) => {
     if (!window.confirm("Are you sure you want to delete this reservation?"))
       return;
@@ -59,7 +59,38 @@ function CustomerDashboard() {
     }
   };
 
-  // ===== PDF FUNCTION =====
+  const handleUpdateReservation = async () => {
+    try {
+      const res = await api.put(
+        `/reservations/${editingReservation.reservationId}`,
+        {
+          reservationId: editingReservation.reservationId,
+          userId: editingReservation.userId,
+          roomId: editingReservation.roomId,
+          checkIn: editFormData.checkIn,
+          checkOut: editFormData.checkOut,
+          totalBill: editFormData.totalBill,
+          status: editingReservation.status,
+        }
+      );
+
+      setReservations((prev) =>
+        prev.map((r) =>
+          r.reservationId === editingReservation.reservationId
+            ? res.data
+            : r
+        )
+      );
+
+      setEditingReservation(null);
+
+      alert("✅ Reservation updated successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("❌ Update failed!");
+    }
+  };
+
   const handlePDF = async (reservation) => {
     const doc = new jsPDF("p", "mm", "a4");
 
@@ -75,25 +106,14 @@ function CustomerDashboard() {
 
     try {
       const bgBase64 = await getBase64ImageFromUrl(
-        "https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?cs=srgb&dl=pexels-pixabay-258154.jpg&fm=jpg"
+        "https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg"
       );
       doc.addImage(bgBase64, "JPEG", 0, 0, 210, 297);
-    } catch (err) {
-      console.error("Background load failed", err);
-    }
+    } catch (err) {}
 
     doc.setFillColor(255, 255, 255, 0.06);
     doc.setDrawColor(255, 255, 255, 0.14);
     doc.roundedRect(15, 25, 180, 247, 22, 22, "FD");
-
-    try {
-      const logoBase64 = await getBase64ImageFromUrl(
-        "https://www.bing.com/th/id/OIG1.1NOl9hAY_HzmKy2eK7xu?w=286&h=286&c=6&r=0&o=5&dpr=1.3&pid=ImgGn"
-      );
-      doc.addImage(logoBase64, "PNG", 85, 35, 40, 40);
-    } catch (err) {
-      console.error("Logo load failed", err);
-    }
 
     doc.setFontSize(22);
     doc.setTextColor(224, 184, 74);
@@ -126,31 +146,21 @@ function CustomerDashboard() {
     if (reservation.status === "APPROVED") {
       try {
         const sealBase64 = await getBase64ImageFromUrl(
-          "https://static.vecteezy.com/system/resources/previews/027/570/215/original/approved-rubber-stamp-approved-icon-seal-of-approval-tested-and-verified-badge-with-check-mark-accepted-sign-authorized-badge-design-with-grunge-texture-illustration-vector.jpg"
+          "https://static.vecteezy.com/system/resources/previews/027/570/215/original/approved-rubber-stamp-approved-icon.jpg"
         );
         doc.addImage(sealBase64, "JPEG", 140, 180, 50, 50);
-      } catch (err) {
-        console.error("Seal load failed", err);
-      }
+      } catch (err) {}
     }
-
-    doc.setFontSize(11);
-    doc.setTextColor(180, 180, 180);
-    doc.text("Thank you for choosing Ocean View Resort!", 105, 280, {
-      align: "center",
-    });
 
     doc.save(`Reservation_${reservation.reservationId}.pdf`);
   };
 
   return (
     <div className="dashboard-container">
-      {/* NAVBAR */}
       <nav className="dashboard-nav">
         <h1 className="nav-title">
           Welcome, {user?.username || "Customer"} 👋
         </h1>
-
         <div className="nav-links">
           <Link to="/help/customer" className="nav-btn">
             ❓ Help
@@ -161,7 +171,52 @@ function CustomerDashboard() {
         </div>
       </nav>
 
-      {/* CUSTOMER OPERATIONS */}
+      {/* INLINE EDIT FORM */}
+      {editingReservation && (
+        <div className="form-container">
+          <h2>Edit Reservation</h2>
+
+          <label>Check-In</label>
+          <input
+            type="date"
+            min={new Date().toISOString().split("T")[0]}
+            value={editFormData.checkIn}
+            onChange={(e) =>
+              setEditFormData({ ...editFormData, checkIn: e.target.value })
+            }
+          />
+
+          <label>Check-Out</label>
+          <input
+            type="date"
+            min={editFormData.checkIn || new Date().toISOString().split("T")[0]}
+            value={editFormData.checkOut}
+            onChange={(e) =>
+              setEditFormData({ ...editFormData, checkOut: e.target.value })
+            }
+          />
+
+          <label>Total Bill</label>
+          <input
+            type="number"
+            value={editFormData.totalBill}
+            onChange={(e) =>
+              setEditFormData({ ...editFormData, totalBill: e.target.value })
+            }
+          />
+
+          <button className="add-btn" onClick={handleUpdateReservation}>
+            Save
+          </button>
+          <button
+            className="delete-btn"
+            onClick={() => setEditingReservation(null)}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
       <h2 style={{ margin: "30px 0 15px 0", color: "var(--accent)" }}>
         🏨 Customer Operations
       </h2>
@@ -184,16 +239,15 @@ function CustomerDashboard() {
         </Link>
       </div>
 
-      {/* UPDATE CUSTOMER DETAILS */}
       {user && (
         <Link
           to={`/updateCustomer/${user.id}`}
-          className="stat-card green"
+          className="stat-card"
           style={{
             textDecoration: "none",
             color: "white",
             backgroundImage:
-              "url('https://images.pexels.com/photos/3184295/pexels-photo-3184295.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940')",
+              "url('https://images.pexels.com/photos/3184295/pexels-photo-3184295.jpeg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -203,7 +257,6 @@ function CustomerDashboard() {
         </Link>
       )}
 
-      {/* MY RESERVATIONS */}
       <h2 style={{ margin: "30px 0 15px 0", color: "var(--accent)" }}>
         📋 My Reservations
       </h2>
@@ -218,63 +271,59 @@ function CustomerDashboard() {
             reservations.map((r) => (
               <div className="stat-card" key={r.reservationId}>
                 <img
-                  src={r.room?.imageUrl || "https://via.placeholder.com/200"}
+                  src={
+                    r.imageUrl ||
+                    r.room?.imageUrl ||
+                    "https://via.placholder.com/400"
+                  }
                   alt={r.room?.roomType || "Room"}
-                  style={{
-                    width: "100%",
-                    height: "160px",
-                    objectFit: "cover",
-                    marginBottom: "10px",
-                    borderRadius: "5px",
-                  }}
+                  className="room-card"
                 />
 
-                <p>
-                  <strong>Reservation ID:</strong> {r.reservationId}
-                </p>
-                <p>
-                  <strong>Room Type:</strong> {r.room?.roomType}
-                </p>
-                <p>
-                  <strong>Price Per Night:</strong> Rs. {r.room?.pricePerNight}
-                </p>
-                <p>
-                  <strong>Check-In:</strong> {r.checkIn}
-                </p>
-                <p>
-                  <strong>Check-Out:</strong> {r.checkOut}
-                </p>
-                <p>
-                  <strong>Total Bill:</strong> Rs. {r.totalBill}
-                </p>
-                <p>
-                  <strong>Status:</strong> {r.status}
-                </p>
+                <div className="reservation-info">
+                  <p><strong>ID:</strong> {r.reservationId}</p>
+                  <p><strong>Room:</strong> {r.room?.roomType}</p>
+                  <p><strong>Check-In:</strong> {r.checkIn}</p>
+                  <p><strong>Check-Out:</strong> {r.checkOut}</p>
+                  <p><strong>Total:</strong> {r.totalBill}</p>
+                  <p><strong>Status:</strong> {r.status}</p>
+                </div>
 
-                {/* PDF BUTTON ONLY IF APPROVED */}
-                {r.status === "APPROVED" && (
-                  <button
-                    className="add-btn"
-                    style={{ marginTop: "10px" }}
-                    onClick={() => handlePDF(r)}
-                  >
-                    PDF
-                  </button>
-                )}
+                <div className="reservation-actions">
+                  {r.status === "APPROVED" ? (
+                    <button
+                      className="add-btn"
+                      onClick={() => handlePDF(r)}
+                    >
+                      PDF
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        className="edit-btn"
+                        onClick={() => {
+                          setEditingReservation(r);
+                          setEditFormData({
+                            checkIn: r.checkIn,
+                            checkOut: r.checkOut,
+                            totalBill: r.totalBill,
+                          });
+                        }}
+                      >
+                        Edit
+                      </button>
 
-                {/* DELETE BUTTON (ADDED) */}
-                {r.status !== "APPROVED" && (
-                  <button
-                    className="add-btn"
-                    style={{
-                      marginTop: "10px",
-                      backgroundColor: "#e74c3c",
-                    }}
-                    onClick={() => handleDeleteReservation(r.reservationId)}
-                  >
-                    🗑 Delete
-                  </button>
-                )}
+                      <button
+                        className="delete-btn"
+                        onClick={() =>
+                          handleDeleteReservation(r.reservationId)
+                        }
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             ))
           )}
