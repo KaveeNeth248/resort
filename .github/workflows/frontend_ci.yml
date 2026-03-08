@@ -31,7 +31,3 @@ jobs:
       - name: Build project
         run: npm run build
 
-
-
-👉 This way, your pipeline will use the correct Node version and run a proper production build instead of hanging on npm run dev.
-Do you want me to also show you how to test locally with multiple Node versions (using nvm) so you can catch these issues before pushing to CI?
