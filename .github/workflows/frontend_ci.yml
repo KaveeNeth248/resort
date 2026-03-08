@@ -1,3 +1,25 @@
+Your GitHub Actions workflow is failing because it’s still pinned to Node.js 18, but Vite requires Node.js 20.19+ or 22.12+. That mismatch is exactly why you’re seeing the crypto.hash is not a function error.
+Here’s how you can fix your CI pipeline:
+🔧 Update Workflow
+Change the setup-node step to use a supported Node version:
+- name: Setup Node.js
+  uses: actions/setup-node@v3
+  with:
+    node-version: 22 # or 20.19+
+    cache: npm
+    cache-dependency-path: resort/package-lock.json
+
+
+⚡ Additional Adjustments
+- Build vs Dev: In CI, you usually want to run npm run build instead of npm run dev.
+- dev starts a local dev server (which hangs waiting for connections).
+- build compiles the project for production and exits cleanly.
+So update your last step:
+- name: Build project
+  run: npm run build
+
+
+✅ Final Workflow Example
 name: Frontend CI
 
 on:
@@ -12,7 +34,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: resort   
+        working-directory: resort    
 
     steps:
       - name: Checkout repository
@@ -21,7 +43,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 22
           cache: npm
           cache-dependency-path: resort/package-lock.json
 
@@ -29,4 +51,9 @@ jobs:
         run: npm install
 
       - name: Build project
-        run: npm run dev
+        run: npm run build
+
+
+
+👉 This way, your pipeline will use the correct Node version and run a proper production build instead of hanging on npm run dev.
+Do you want me to also show you how to test locally with multiple Node versions (using nvm) so you can catch these issues before pushing to CI?
